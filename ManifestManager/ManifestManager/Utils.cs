@@ -53,7 +53,8 @@ namespace ManifestManager
 
         public static int ContainsSequence(byte[] data, ref int i, Predicate<byte> p)
         {
-            try {
+            try
+            {
                 int count = 0;
                 while (p.Invoke(data[i--]))
                 {
@@ -128,7 +129,7 @@ namespace ManifestManager
                         ContainsSequence(data, ref temp, p => p == 0);//space
                         temp -= 8;//hour
                         ContainsSequence(data, ref temp, p => p == 0);//space
-                        for(int j = 0; j < 3; j++)
+                        for (int j = 0; j < 3; j++)
                         {
                             ContainsSequence(data, ref temp, p => IsByteADigit(p));//don't give a fuck about the output
                             --temp;//dot
@@ -136,8 +137,10 @@ namespace ManifestManager
                         }
 
                         int startIndex = temp;
+                        string str = TrimSpaces(Encoding.ASCII.GetString(data, startIndex, i - startIndex).Replace("\0", " "));
+                        data = null;
                         //Console.WriteLine((double)startIndex / (double)len);
-                        return TrimSpaces(Encoding.ASCII.GetString(data, startIndex, i - startIndex).Replace("\0", " "));
+                        return str;
 
 
                     }
@@ -147,7 +150,7 @@ namespace ManifestManager
                     Console.WriteLine("fuck this");
                 }
             }
-           return FileVersionInfo.GetVersionInfo(filepath).ProductVersion; //fallback
+            return FileVersionInfo.GetVersionInfo(filepath).ProductVersion; //fallback
         }
 
         public static string GetClientReleaseDescription(string filepath)
@@ -158,7 +161,7 @@ namespace ManifestManager
             {
                 data = new byte[(f.Length - f.Length / 2)];
                 f.Seek(f.Length / 2, SeekOrigin.Begin);
-                len = f.Read(data, 0, (int)(f.Length - f.Length/2));
+                len = f.Read(data, 0, (int)(f.Length - f.Length / 2));
                 //read from the half to the end
             }
 
@@ -168,9 +171,9 @@ namespace ManifestManager
             int temp, temp2;
 
 
-            for(int i = len - 1;i>=0;i--)
+            for (int i = len - 1; i >= 0; i--)
             {
-                if(data[i] == 0)
+                if (data[i] == 0)
                 {
 
                     temp = i - 1;
@@ -212,16 +215,19 @@ namespace ManifestManager
                     if (error)
                         continue;
 
-                    if(ContainsSequence(data, ref temp, p=>IsByteADigit(p)) == 2)//final hour, literally
+                    if (ContainsSequence(data, ref temp, p => IsByteADigit(p)) == 2)//final hour, literally
                     {
                         int startIndex = temp - 11;
                         //Console.WriteLine((double)startIndex / (double)len);
-                        return TrimSpaces(Encoding.ASCII.GetString(data, startIndex, i - startIndex).Replace("\0", " "));
+                        string str = TrimSpaces(Encoding.ASCII.GetString(data, startIndex, i - startIndex).Replace("\0", " "));
+                        data = null;
+                        return str;
                     }
 
 
                 }
             }
+            data = null;
             return GetClientReleaseDescriptionLegacy(filepath); //fallback
         }
 
@@ -231,6 +237,15 @@ namespace ManifestManager
             using (WebClient wc = new WebClient())
             {
                 string str = wc.DownloadString($"{Program.API_BASE}solutions/{solutionName}/releases/releaselisting_{Program.Region.ToUpper()}");
+                return str.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            }
+        }
+
+        public static List<string> GetProjectVersions(string projectName)
+        {
+            using (WebClient wc = new WebClient())
+            {
+                string str = wc.DownloadString($"{Program.API_BASE}projects/{projectName}/releases/releaselisting_{Program.Region.ToUpper()}");
                 return str.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
             }
         }
@@ -298,6 +313,7 @@ namespace ManifestManager
                 byte[] output = Ionic.Zlib.ZlibStream.UncompressBuffer(data);
                 fs.Write(output, 0, output.Length);
             }
+            data = null;
         }
 
 
@@ -317,7 +333,7 @@ namespace ManifestManager
         {
             byte[] bytes = new byte[count];
             int tmp;
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 tmp = input.ReadByte();
                 if (tmp == -1)
