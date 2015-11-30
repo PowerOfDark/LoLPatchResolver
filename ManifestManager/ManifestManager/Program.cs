@@ -13,13 +13,12 @@ namespace ManifestManager
 {
     public class Program
     {
-        public static string Realm = "pbe";
-        public static string Region = "PBE";
+        public static string Realm = "live";
+        public static string Region = "NA";
         public static string API_BASE { get { return $"http://l3cdn.riotgames.com/releases/{Program.Realm}/"; } }
 
         static void Main(string[] args)
         {
-            //string test = Utils.GetClientVersion(new SolutionManifest("lol_game_client_sln", "0.0.0.254").Projects[0].GetReleaseManifest());
 
             List<string> versions = Utils.GetSolutionVersions("lol_game_client_sln");
             List<string> toDownload = new List<string>(versions);
@@ -28,7 +27,7 @@ namespace ManifestManager
 
             int all = versions.Count;
             int ok = 0;
-            //toDownload.Reverse();
+
             //foreach (string version in toDownload)
             //{
             //    try
@@ -62,7 +61,8 @@ namespace ManifestManager
                         SolutionManifest m = new SolutionManifest("lol_game_client_sln", version);
                         ReleaseManifest rm = m.Projects[0].GetReleaseManifest();
                         string v = Utils.GetClientVersion(rm);
-                        lock(output)
+                        GC.Collect();
+                        lock (output)
                         {
                             output.Add(version, v);
                         }
@@ -79,15 +79,15 @@ namespace ManifestManager
 
             Log("_output_");
 
-            foreach(string v in versions)
+            using (StreamWriter sw = new StreamWriter($"map_{Realm}_{Region}.txt"))
             {
-                Log($"{v} -> {output[v]}");
+                foreach (string v in versions)
+                {
+                    sw.WriteLine($"{v} -> {output[v]}");
+                }
             }
 
-            //foreach(string version in Utils.GetSolutionVersions("lol_game_client_sln"))
-            //{
 
-            //}
         }
 
         public static void Log(string str)
