@@ -14,8 +14,6 @@ namespace ManifestManager
     public class Utils
     {
 
-        public static Dictionary<string, string> Cached = new Dictionary<string, string>();
-
         public static string TrimSpaces(string str)
         {
             RegexOptions options = RegexOptions.None;
@@ -269,8 +267,6 @@ namespace ManifestManager
 
             if (t2.Contains("League of Legends.exe"))
             {
-                if (Cached.ContainsKey(fileVersion))
-                    return Cached[fileVersion];
 
                 try
                 {
@@ -288,7 +284,6 @@ namespace ManifestManager
 
                     string ret = GetClientReleaseDescription(tmpName);
                     File.Delete(tmpName);
-                    Cached.Add(fileVersion, ret);
                     return ret;
                 }
                 catch { }

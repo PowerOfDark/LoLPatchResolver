@@ -35,7 +35,7 @@ namespace ManifestManager
         public int sizeUncompressed; // use this value instead of size when type is 6
 
 
-        public string ToString()
+        public override string ToString()
         {
             return path + name + " " + release + " type:" + fileType + " u2:" + sizeUncompressed + " u3:" + unknown3 + " u4:" + unknown4;
         }
