@@ -20,7 +20,7 @@ namespace ManifestManager
         static void Main(string[] args)
         {
             Dictionary<string, string> mapsToUpdate = new Dictionary<string, string>()
-            { { "EUNE", "live" }, { "NA", "live" }, { "EUW", "live" } }; //TODO keep more regions updated
+            { { "EUNE", "live" }}; //TODO keep more regions updated
 
             foreach(string key in mapsToUpdate.Keys)
             {
