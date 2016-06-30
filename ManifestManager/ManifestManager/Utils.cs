@@ -208,66 +208,44 @@ namespace ManifestManager
             //len = data.Length;
 
             int temp, temp2;
+            byte[] releases = Encoding.UTF8.GetBytes("Releases/");
+            var releasesSearch = data.Locate(releases);
+            if (releasesSearch.Count() == 0)
+                return GetClientReleaseDescriptionLegacy(filepath);
+            int pos = Math.Max(0, releasesSearch.First() - 512);
+            string txt = Encoding.UTF8.GetString(data, pos, 768);
 
-
-            for (int i = len - 1; i >= 0; i--)
+            string date = "", hour = "", patchlong = "";
+            Regex r;
+            Match m;
+            try
             {
-                if (data[i] == 0)
-                {
-
-                    temp = i - 1;
-                    bool error = false;
-                    for (int j = 0; j < 3; j++)
-                    {
-                        temp2 = ContainsSequence(data, ref temp, p => IsByteADigit(p));
-                        if (temp2 == 0 || temp2 > 10 || data[temp--] != 0x2e)
-                        {
-                            error = true;
-                            break;
-                        }
-                    }
-
-                    if (error)
-                        continue;
-
-
-                    temp2 = ContainsSequence(data, ref temp, p => IsByteADigit(p));
-                    if (temp == 0 || temp2 > 10)
-                        continue;
-
-                    temp2 = ContainsSequence(data, ref temp, p => p == 0);
-                    if (temp2 == 0 || temp2 > 10)
-                        continue;
-
-                    //hour
-                    //hh:mm:ss
-                    for (int j = 0; j < 2; j++)
-                    {
-                        temp2 = ContainsSequence(data, ref temp, p => IsByteADigit(p));
-                        if (temp2 != 2 || data[temp--] != 0x3a)
-                        {
-                            error = true;
-                            break;
-                        }
-                    }
-
-                    if (error)
-                        continue;
-
-                    if (ContainsSequence(data, ref temp, p => IsByteADigit(p)) == 2)//final hour, literally
-                    {
-                        int startIndex = temp - 11;
-                        //Console.WriteLine((double)startIndex / (double)len);
-                        string str = TrimSpaces(Encoding.ASCII.GetString(data, startIndex, i - startIndex).Replace("\0", " "));
-                        data = null;
-                        return str;
-                    }
-
-
-                }
+                r = new Regex("(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec).*?(\\d{1,2}).*?(\\d{4})", RegexOptions.Singleline);
+                m = r.Match(txt);
+                date = m.Groups[1].Value + " " + m.Groups[2].Value + " " + m.Groups[3].Value;
             }
-            data = null;
-            return GetClientReleaseDescriptionLegacy(filepath); //fallback
+            catch { }
+            try
+            {
+                r = new Regex("(\\d{2}:\\d{2}:\\d{2})", RegexOptions.Singleline);
+                m = r.Match(txt);
+                hour = m.Groups[1].Value;
+            }
+            catch { }
+            try
+            {
+                r = new Regex("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,5})", RegexOptions.Singleline);
+                m = r.Match(txt);
+                patchlong = m.Groups[1].Value;
+            }
+            catch { }
+
+            if (patchlong.Length < 3)
+                return GetClientReleaseDescriptionLegacy(filepath);
+
+
+
+            return $"{date} {hour} {patchlong}";
         }
 
 
