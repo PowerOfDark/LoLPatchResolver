@@ -232,13 +232,15 @@ namespace ManifestManager
                 hour = m.Groups[1].Value;
             }
             catch { }
-            try
-            {
-                r = new Regex("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,5})", RegexOptions.Singleline);
-                m = r.Match(txt);
-                patchlong = m.Groups[1].Value;
-            }
-            catch { }
+            //try
+            //{
+            //    r = new Regex("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,5})", RegexOptions.Singleline);
+            //    m = r.Match(txt);
+            //    patchlong = m.Groups[1].Value;
+            //}
+            //catch {  }
+            patchlong = FileVersionInfo.GetVersionInfo(filepath).ProductVersion;
+
 
             if (patchlong.Length < 3)
                 return GetClientReleaseDescriptionLegacy(filepath);
